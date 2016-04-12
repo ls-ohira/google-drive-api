@@ -58,4 +58,33 @@ class GDrive {
             print "An error occurred: {$e->getMessage()}\n";
         }
     }
+
+    static function updateFile($dirId, $fileId, $filePath, $fileInfo) {
+        $client = self::getClient();
+        $service = new \Google_Service_Drive($client);
+
+        // 追加したいファイルオブジェクトを作成
+        $file = new \Google_Service_Drive_DriveFile();
+        $file->setTitle($fileInfo['title']);
+        $file->setDescription($fileInfo['description']);
+        $file->setMimeType($fileInfo['description']);
+
+        // 親オブジェクト
+        $parent = new \Google_Service_Drive_ParentReference();
+        $parent->setId($dirId);
+        $file->setParents(array($parent));
+
+        try {
+            $result = $service->files->patch($fileId, $file, array(
+                'data'        => file_get_contents($filePath),
+                'mimeType'    => $config['mimeType'],
+		'uploadType'  => $config['uploadType'],
+                'convert' =>  true,
+            ));
+
+            echo $result ? "[SUCCESS] Succeed upload\n" : "[ERROR] Failed upload\n";
+        } catch (Exception $e) {
+            print "An error occurred: {$e->getMessage()}\n";
+        }
+    }
 }
